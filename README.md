@@ -56,4 +56,4 @@ yarn dev
 
 ## License
 
-MIT 
+MIT
