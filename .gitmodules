@@ -1,2 +1,4 @@
-# This file is intentionally empty
-# The repository does not use Git submodules 
+[submodule "linkedin-lead-analysis"]
+    path = linkedin-lead-analysis
+    url = https://example.com/non-existent-repo.git
+    ignore = all
