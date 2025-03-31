@@ -47,7 +47,7 @@ jobs:
           EOL
 
       - name: Build Next.js app
-        run: next build
+        run: npm run build
         env:
           NODE_ENV: production
 
@@ -57,6 +57,6 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: gh-pages-app
+          folder: out
           branch: gh-pages
           clean: true 
