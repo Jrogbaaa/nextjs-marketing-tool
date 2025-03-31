@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,14 +20,20 @@ jobs:
         with:
           submodules: false
           
-      - name: Clean nested .git directories
+      - name: Fix submodule issues
         run: |
           echo "Cleaning any nested .git directories"
           find . -path "*/linkedin-lead-analysis/.git" -type d -exec rm -rf {} + || true
+          # Create empty .gitmodules file to prevent errors
+          touch .gitmodules
+          # Remove any Git submodule references
+          git config --local --unset-all submodule.linkedin-lead-analysis.url || true
+          git config --local --unset-all submodule.linkedin-lead-analysis.active || true
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: gh-pages-app
           branch: gh-pages
-          clean: true 
+          clean: true
+          token: ${{ secrets.GITHUB_TOKEN }} 
