@@ -15,21 +15,29 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: false
-          
-      - name: Fix submodule issues
+      # Manual sparse checkout to avoid submodule issues
+      - name: Manual checkout
         run: |
-          echo "Cleaning any nested .git directories"
-          find . -path "*/linkedin-lead-analysis/.git" -type d -exec rm -rf {} + || true
-          # Create empty .gitmodules file to prevent errors
+          # Initialize git repo
+          git init
+          git remote add origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          
+          # Configure sparse checkout to exclude problematic path
+          git sparse-checkout init
+          git sparse-checkout set --no-cone '/*' '!linkedin-lead-analysis'
+          
+          # Fetch and checkout
+          git fetch --depth=1 origin ${{ github.ref }}
+          git checkout FETCH_HEAD
+          
+          # Create placeholder to prevent git from looking for submodules
           touch .gitmodules
-          # Remove any Git submodule references
-          git config --local --unset-all submodule.linkedin-lead-analysis.url || true
-          git config --local --unset-all submodule.linkedin-lead-analysis.active || true
+          
+          # Configure git identity
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
 
+      # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
