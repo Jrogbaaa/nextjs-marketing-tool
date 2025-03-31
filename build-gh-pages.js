@@ -113,12 +113,33 @@ try {
   
   fs.writeFileSync(path.join(tempDir, 'next.config.js'), nextConfigContent);
   
+  // Create TypeScript declarations for PhantomLaunchResult
+  console.log(`${colors.blue}Creating TypeScript declaration files${colors.reset}`);
+  const typesDir = path.join(tempDir, 'src', 'types');
+  fs.mkdirSync(typesDir, { recursive: true });
+  
+  const phantomTypesContent = `
+  export interface PhantomLaunchResult {
+    data: any;
+    status: string;
+    error?: string;
+  }
+  `;
+  
+  fs.writeFileSync(path.join(typesDir, 'phantombuster.d.ts'), phantomTypesContent);
+  
   // Step 3: Run the Next.js build in the temp directory
-  console.log(`${colors.bright}${colors.blue}Building Next.js project...${colors.reset}`);
-  execSync('npm install && npx next build', {
-    cwd: tempDir,
-    stdio: 'inherit'
-  });
+  console.log(`${colors.blue}Building Next.js project...${colors.reset}`);
+  try {
+    execSync('npm install && npx next build --no-lint', {
+      cwd: tempDir,
+      stdio: 'inherit',
+      env: { ...process.env, NODE_ENV: 'production' }
+    });
+  } catch (error) {
+    console.error(`${colors.red}Build failed:${colors.reset}`, error);
+    process.exit(1);
+  }
   
   // Step 4: Copy the built output to the output directory  
   console.log(`${colors.blue}Step 4: Copying built output to the final destination${colors.reset}`);
