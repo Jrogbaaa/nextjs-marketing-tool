@@ -15,29 +15,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Manually prepare environment first
-      - name: Prepare environment
+      # Directly clone repository using Git commands instead of checkout action
+      - name: Direct Git Clone
         run: |
-          mkdir -p $GITHUB_WORKSPACE
-          cd $GITHUB_WORKSPACE
-          touch .gitmodules
-          echo "[submodule \"linkedin-lead-analysis\"]" > .gitmodules
-          echo "    path = linkedin-lead-analysis" >> .gitmodules
-          echo "    url = https://example.com/non-existent-repo.git" >> .gitmodules
-      
-      # Use standard checkout action but with specific parameters
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: false
-          path: .
-      
-      # Clean up problem submodule
-      - name: Remove problematic submodule
-        run: |
-          rm -rf linkedin-lead-analysis
-          git config --local --remove-section submodule.linkedin-lead-analysis || true
-      
+          # Clone without submodules
+          git clone --no-checkout --filter=blob:none --depth=1 "https://github.com/${GITHUB_REPOSITORY}.git" .
+          # Skip clone of submodules (critical!)
+          git -c protocol.version=2 -c submodule.recurse=false -c advice.detachedHead=false checkout "${GITHUB_SHA}"
+          # Verify contents
+          ls -la
+          # Remove any problematic directories
+          rm -rf linkedin-lead-analysis || true
+          # Clean .gitmodules file 
+          echo "# Submodules disabled" > .gitmodules
+          # Verify the gh-pages-app directory exists
+          ls -la gh-pages-app || echo "Warning: gh-pages-app directory not found"
+
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
