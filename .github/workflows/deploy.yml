@@ -15,28 +15,29 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Manual sparse checkout to avoid submodule issues
-      - name: Manual checkout
+      # Manually prepare environment first
+      - name: Prepare environment
         run: |
-          # Initialize git repo
-          git init
-          git remote add origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          
-          # Configure sparse checkout to exclude problematic path
-          git sparse-checkout init
-          git sparse-checkout set --no-cone '/*' '!linkedin-lead-analysis'
-          
-          # Fetch and checkout
-          git fetch --depth=1 origin ${{ github.ref }}
-          git checkout FETCH_HEAD
-          
-          # Create placeholder to prevent git from looking for submodules
+          mkdir -p $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE
           touch .gitmodules
-          
-          # Configure git identity
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-
+          echo "[submodule \"linkedin-lead-analysis\"]" > .gitmodules
+          echo "    path = linkedin-lead-analysis" >> .gitmodules
+          echo "    url = https://example.com/non-existent-repo.git" >> .gitmodules
+      
+      # Use standard checkout action but with specific parameters
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          path: .
+      
+      # Clean up problem submodule
+      - name: Remove problematic submodule
+        run: |
+          rm -rf linkedin-lead-analysis
+          git config --local --remove-section submodule.linkedin-lead-analysis || true
+      
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
