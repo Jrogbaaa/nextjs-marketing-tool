@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: true,
+  output: 'export',
+  basePath: process.env.NODE_ENV === 'production' ? '/NEW-MARKETING-TOOL' : '',
   images: {
-    domains: ['localhost'],
+    unoptimized: true,
+  },
+  trailingSlash: true,
+
+  // Only include the src folder in the build, not linkedin-lead-analysis
+  experimental: {
+    outputFileTracingRoot: './src',
   },
 };
 

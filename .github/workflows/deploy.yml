@@ -13,6 +13,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: false
+          
+      - name: Clean nested .git directories
+        run: |
+          echo "Cleaning any nested .git directories"
+          find . -path "*/linkedin-lead-analysis/.git" -type d -exec rm -rf {} + || true
+          # Remove problematic modules temporarily
+          rm -rf src/app/api/import src/app/api/insights || true
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -21,14 +28,35 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
+
+      - name: Update Next.js config
+        run: |
+          cat > next.config.js << 'EOL'
+          /** @type {import('next').NextConfig} */
+          const nextConfig = {
+            output: 'export',
+            basePath: process.env.NODE_ENV === 'production' ? '/NEW-MARKETING-TOOL' : '',
+            images: {
+              unoptimized: true,
+            },
+            trailingSlash: true,
+          };
+          
+          module.exports = nextConfig;
+          EOL
 
       - name: Build Next.js app
-        run: npm run build
+        run: next build
+        env:
+          NODE_ENV: production
+
+      - name: Add .nojekyll file
+        run: touch out/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: out
+          folder: gh-pages-app
           branch: gh-pages
           clean: true 
