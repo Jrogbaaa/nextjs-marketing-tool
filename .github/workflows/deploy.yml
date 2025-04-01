@@ -5,37 +5,27 @@ on:
     branches:
       - main
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # Directly clone repository using Git commands instead of checkout action
-      - name: Direct Git Clone
-        run: |
-          # Clone without submodules
-          git clone --no-checkout --filter=blob:none --depth=1 "https://github.com/${GITHUB_REPOSITORY}.git" .
-          # Skip clone of submodules (critical!)
-          git -c protocol.version=2 -c submodule.recurse=false -c advice.detachedHead=false checkout "${GITHUB_SHA}"
-          # Verify contents
-          ls -la
-          # Remove any problematic directories
-          rm -rf linkedin-lead-analysis || true
-          # Clean .gitmodules file 
-          echo "# Submodules disabled" > .gitmodules
-          # Verify the gh-pages-app directory exists
-          ls -la gh-pages-app || echo "Warning: gh-pages-app directory not found"
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      # Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: gh-pages-app
-          branch: gh-pages
-          clean: true
-          token: ${{ secrets.GITHUB_TOKEN }} 
+          folder: out
+          branch: gh-pages 
