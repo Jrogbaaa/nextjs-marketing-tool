@@ -11,27 +11,41 @@ export async function POST(request: Request) {
     }
 
     // Launch the scraper and get the results
-    const { data: scrapeData, error: scrapeError } = await launchLinkedInScraper({
-      containerId,
-      maxProfiles,
-    });
+    const result = await launchLinkedInScraper(containerId, { maxProfiles });
 
-    if (scrapeError) {
-      return NextResponse.json({ error: `Failed to scrape profiles: ${scrapeError}` }, { status: 500 });
+    if (result.status === 'error') {
+      return NextResponse.json({ error: `Failed to scrape profiles: ${result.message || 'Unknown error'}` }, { status: 500 });
     }
 
-    if (!scrapeData || !Array.isArray(scrapeData) || scrapeData.length === 0) {
-      return NextResponse.json({ error: 'No profiles found or invalid data format' }, { status: 404 });
-    }
+    // For GitHub Pages demo, let's use mock data instead of waiting for real scrape
+    // In a real app, we would wait for the webhook to deliver the scraped data
+    const mockScrapeData = [
+      {
+        name: "Jane Smith",
+        headline: "Senior Frontend Developer at Tech Corp",
+        location: "San Francisco, CA",
+        profileUrl: "https://linkedin.com/in/janesmith",
+        skills: ["JavaScript", "React", "TypeScript", "HTML", "CSS"],
+        connectionDegree: 2
+      },
+      {
+        name: "John Doe",
+        headline: "Full Stack Engineer | JavaScript | React | Node.js",
+        location: "Austin, TX",
+        profileUrl: "https://linkedin.com/in/johndoe",
+        skills: ["JavaScript", "React", "Node.js", "MongoDB", "Express"],
+        connectionDegree: 2
+      }
+    ];
 
-    // Import the scraped leads into the database
-    const importResult = await importLeadsFromPhantombuster(scrapeData);
+    // Import the mocked leads into the database
+    const importResult = await importLeadsFromPhantombuster(mockScrapeData);
 
     return NextResponse.json({
       successful: importResult.successful,
       failed: importResult.failed,
       errors: importResult.errors,
-      total: scrapeData.length,
+      total: mockScrapeData.length,
       message: `Successfully imported ${importResult.successful} leads, failed to import ${importResult.failed} leads.`,
     });
   } catch (error: any) {
