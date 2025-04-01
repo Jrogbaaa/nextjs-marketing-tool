@@ -2,7 +2,7 @@
   "name": "linkedin-lead-analysis",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://jrogbaaa.github.io/NEW-MARKETING-TOOL",
+  "homepage": "https://jrogbaaa.github.io/nextjs-marketing-tool",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,9 +12,13 @@
     "deploy": "gh-pages -d out"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "axios": "^1.8.4",
     "next": "14.0.4",
+    "openai": "^4.91.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

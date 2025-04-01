@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: process.env.NODE_ENV === 'production' ? '/NEW-MARKETING-TOOL' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/NEW-MARKETING-TOOL/' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/nextjs-marketing-tool' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/nextjs-marketing-tool/' : '',
   images: {
     unoptimized: true,
   },
